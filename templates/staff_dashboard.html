@@ -1,51 +1,20 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="row mb-4">
-    <div class="col">
-        <h2>Staff Dashboard</h2>
-        <p class="text-muted">Welcome, {{ current_user.username }}. Here are the treks assigned to you.</p>
-    </div>
+    <div class="col"><h2>Staff Dashboard</h2><p class="text-muted">Concise overview of your assignments.</p></div>
 </div>
-
 <div class="row">
-    <div class="col-md-12">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">My Assigned Treks</div>
-            <div class="card-body p-0">
-                <table class="table table-striped table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Trek Name</th>
-                            <th>Location</th>
-                            <th>Date</th>
-                            <th>Available Slots</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for trek in treks %}
-                        <tr>
-                            <td><strong>{{ trek.name }}</strong></td>
-                            <td>{{ trek.location }}</td>
-                            <td>{{ trek.start_date }} to {{ trek.end_date }}</td>
-                            <td>{{ trek.available_slots }}</td>
-                            <td>
-                                <span class="badge bg-{{ 'success' if trek.status == 'Open' else 'secondary' if trek.status == 'Closed' else 'primary' }}">
-                                    {{ trek.status }}
-                                </span>
-                            </td>
-                            <td>
-                                <a href="/staff/manage_trek/{{ trek.id }}" class="btn btn-sm btn-outline-primary">Manage Trek</a>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="6" class="text-center py-4">No treks have been assigned to you yet.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <div class="col-md-6">
+        <div class="card text-white bg-primary mb-3 text-center">
+            <div class="card-body">
+                <h5 class="card-title">My Assigned Treks</h5><h2 class="display-6">{{ total_treks }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card text-white bg-success mb-3 text-center">
+            <div class="card-body">
+                <h5 class="card-title">Total Participants</h5><h2 class="display-6">{{ total_participants }}</h2>
             </div>
         </div>
     </div>

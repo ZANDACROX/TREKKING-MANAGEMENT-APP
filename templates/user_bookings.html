@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row mb-3"><div class="col"><h2>My Current Bookings</h2><p class="text-muted">Active bookings you can manage or cancel.</p></div></div>
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-striped mb-0">
+            <thead class="table-light"><tr><th>Trek</th><th>Dates</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+                {% for b in bookings %}
+                <tr>
+                    <td><strong>{{ b.trek.name }}</strong></td>
+                    <td>{{ b.trek.start_date }} to {{ b.trek.end_date }}</td>
+                    <td><span class="badge bg-primary">{{ b.status }}</span></td>
+                    <td>
+                        <form method="POST" action="/user/unbook/{{ b.id }}" onsubmit="return confirm('Cancel this booking?');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">Cancel</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}<tr><td colspan="4" class="text-center py-4">No active bookings found.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="row mb-3"><div class="col"><h2>Booking History</h2><p class="text-muted">A record of all your past and present trek activities.</p></div></div>
+<div class="row mb-4"><div class="col"><h2>Participants List</h2></div></div>
 <div class="card shadow-sm">
     <div class="card-body p-0">
-        <table class="table table-striped mb-0">
-            <thead class="table-light"><tr><th>ID</th><th>Trek</th><th>Booking Date</th><th>Status</th></tr></thead>
+        <table class="table table-hover mb-0">
+            <thead class="table-light"><tr><th>Trek Name</th><th>Participant Name</th><th>Booking Date</th><th>Status</th></tr></thead>
             <tbody>
                 {% for b in bookings %}
                 <tr>
-                    <td>#{{ b.id }}</td>
                     <td><strong>{{ b.trek.name }}</strong></td>
+                    <td>{{ b.user.username }} {% if b.user.status == 'blacklisted' %}<span class="badge bg-danger">Blacklisted</span>{% endif %}</td>
                     <td>{{ b.booking_date }}</td>
                     <td><span class="badge bg-{{ 'success' if b.status == 'Completed' else 'primary' if b.status == 'Booked' else 'danger' }}">{{ b.status }}</span></td>
                 </tr>
-                {% else %}<tr><td colspan="4" class="text-center py-4">History is empty.</td></tr>{% endfor %}
+                {% else %}<tr><td colspan="4" class="text-center py-4">No participants found.</td></tr>{% endfor %}
             </tbody>
         </table>
     </div>

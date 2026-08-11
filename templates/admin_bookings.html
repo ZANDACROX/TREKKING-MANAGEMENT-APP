@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <h2>All Bookings History</h2>
+        <p class="text-muted">System-wide record of all bookings, cancellations, and completions.</p>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-secondary text-white">System Booking Records</div>
+    <div class="card-body p-0">
+        <table class="table table-striped table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Booking ID</th>
+                    <th>Trekker Name</th>
+                    <th>Trek Route</th>
+                    <th>Booking Date</th>
+                    <th>Current Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in bookings %}
+                <tr>
+                    <td>#{{ b.id }}</td>
+                    <td>
+                        {{ b.user.username }}
+                        {% if b.user.status == 'blacklisted' %}
+                            <span class="badge bg-danger ms-1">Blacklisted</span>
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ b.trek.name }}</strong></td>
+                    <td>{{ b.booking_date }}</td>
+                    <td>
+                        <span class="badge bg-{{ 'success' if b.status == 'Completed' else 'primary' if b.status == 'Booked' else 'danger' }}">
+                            {{ b.status }}
+                        </span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center py-4">No bookings exist in the system yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row mb-4"><div class="col"><h2>My Treks</h2></div></div>
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-striped table-hover mb-0">
+            <thead class="table-dark"><tr><th>Trek Name</th><th>Dates</th><th>Slots</th><th>Status</th><th>Update</th></tr></thead>
+            <tbody>
+                {% for trek in treks %}
+                <tr>
+                    <td><strong>{{ trek.name }}</strong><br><small>{{ trek.location }}</small></td>
+                    <td>{{ trek.start_date }} to {{ trek.end_date }}</td>
+                    <form method="POST" action="/staff/manage_trek/{{ trek.id }}">
+                        <td><input type="number" name="available_slots" class="form-control form-control-sm" value="{{ trek.available_slots }}" style="width: 80px;"></td>
+                        <td>
+                            <select name="status" class="form-select form-select-sm">
+                                <option value="Open" {% if trek.status == 'Open' %}selected{% endif %}>Open</option>
+                                <option value="Closed" {% if trek.status == 'Closed' %}selected{% endif %}>Closed</option>
+                                <option value="Completed" {% if trek.status == 'Completed' %}selected{% endif %}>Completed</option>
+                            </select>
+                        </td>
+                        <td><button type="submit" class="btn btn-sm btn-primary">Save</button></td>
+                    </form>
+                </tr>
+                {% else %}<tr><td colspan="5" class="text-center py-4">No treks assigned.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
