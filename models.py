@@ -1,15 +1,18 @@
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
 
 db = SQLAlchemy()
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     __tablename__ = 'users'
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False)
     status = db.Column(db.String(20), default='active')
+
     bookings = db.relationship('Booking', backref='user', lazy=True, cascade="all, delete-orphan")
     assigned_treks = db.relationship('Trek', backref='assigned_staff', lazy=True)
     staff_profile = db.relationship('StaffProfile', backref='user', uselist=False, lazy=True, cascade="all, delete-orphan")
@@ -33,6 +36,7 @@ class Trek(db.Model):
     start_date = db.Column(db.String(20), nullable=False)
     end_date = db.Column(db.String(20), nullable=False)
     description = db.Column(db.Text, nullable=True)
+    
     bookings = db.relationship('Booking', backref='trek', lazy=True, cascade="all, delete-orphan")
 
 class Booking(db.Model):
