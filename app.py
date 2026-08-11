@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
@@ -11,6 +12,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 
+# --- Flask-Login Setup ---
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -19,6 +21,7 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# --- Database Initialization ---
 def init_db():
     with app.app_context():
         db.create_all()
@@ -36,6 +39,7 @@ def init_db():
             db.session.commit()
             print("Database initialized! Default Admin created.")
 
+# --- Authentication Routes ---
 @app.route('/', methods=['GET'])
 def home():
     if current_user.is_authenticated:
@@ -105,6 +109,8 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('login'))
 
+
+# --- Admin Functionalities (Milestone 3) ---
 @app.route('/admin/dashboard')
 @login_required
 def admin_dashboard():
@@ -198,6 +204,8 @@ def assign_staff():
         
     return redirect(url_for('admin_treks'))
 
+
+# --- Staff Functionalities (Milestone 4) ---
 @app.route('/staff/dashboard')
 @login_required
 def staff_dashboard():
@@ -206,7 +214,6 @@ def staff_dashboard():
         return redirect(url_for('login'))
     
     assigned_treks = Trek.query.filter_by(assigned_staff_id=current_user.id).all()
-    
     return render_template('staff_dashboard.html', treks=assigned_treks)
 
 @app.route('/staff/manage_trek/<int:trek_id>', methods=['GET', 'POST'])
@@ -236,12 +243,76 @@ def staff_manage_trek(trek_id):
         return redirect(url_for('staff_manage_trek', trek_id=trek.id))
         
     trek_bookings = Booking.query.filter_by(trek_id=trek.id).all()
-    
     return render_template('staff_manage_trek.html', trek=trek, bookings=trek_bookings)
 
-@app.route('/user/dashboard')
+
+# --- User Functionalities (Milestone 5 & 6) ---
+@app.route('/user/dashboard', methods=['GET'])
 @login_required
-def user_dashboard(): return "<h1>User Dashboard (Coming in Milestone 5)</h1><a href='/logout'>Logout</a>"
+def user_dashboard():
+    if current_user.role != 'user':
+        flash('Unauthorized access!', 'danger')
+        return redirect(url_for('login'))
+        
+    # Search and Filter Logic
+    search_location = request.args.get('location', '')
+    search_difficulty = request.args.get('difficulty', '')
+    
+    # Base query: Users can only see "Open" treks
+    query = Trek.query.filter_by(status='Open')
+    
+    if search_location:
+        query = query.filter(Trek.location.ilike(f"%{search_location}%"))
+    if search_difficulty:
+        query = query.filter_by(difficulty=search_difficulty)
+        
+    available_treks = query.all()
+    
+    return render_template('user_dashboard.html', treks=available_treks, 
+                           location=search_location, difficulty=search_difficulty)
+
+@app.route('/user/book/<int:trek_id>', methods=['POST'])
+@login_required
+def book_trek(trek_id):
+    if current_user.role != 'user':
+        return redirect(url_for('login'))
+        
+    trek = Trek.query.get(trek_id)
+    
+    # 1. Validation: Does the trek exist and is it open?
+    if not trek or trek.status != 'Open' or trek.available_slots <= 0:
+        flash('This trek is unavailable or fully booked.', 'danger')
+        return redirect(url_for('user_dashboard'))
+        
+    # 2. Validation: Prevent duplicate bookings
+    existing_booking = Booking.query.filter_by(user_id=current_user.id, trek_id=trek.id).first()
+    if existing_booking:
+        flash('You have already booked this trek!', 'warning')
+        return redirect(url_for('user_dashboard'))
+        
+    # 3. Create Booking & Update Slots
+    today_date = datetime.now().strftime('%Y-%m-%d')
+    new_booking = Booking(user_id=current_user.id, trek_id=trek.id, booking_date=today_date, status='Booked')
+    
+    trek.available_slots -= 1  # Reduce available slots
+    
+    db.session.add(new_booking)
+    db.session.commit()
+    
+    flash(f'Successfully booked {trek.name}!', 'success')
+    return redirect(url_for('user_history'))
+
+@app.route('/user/history')
+@login_required
+def user_history():
+    if current_user.role != 'user':
+        flash('Unauthorized access!', 'danger')
+        return redirect(url_for('login'))
+        
+    # Fetch all bookings for the logged-in user
+    my_bookings = Booking.query.filter_by(user_id=current_user.id).all()
+    return render_template('user_history.html', bookings=my_bookings)
+
 
 if __name__ == '__main__':
     init_db()

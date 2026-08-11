@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <h2>My Trekking History</h2>
+        <a href="/user/dashboard" class="btn btn-outline-secondary btn-sm">← Back to Dashboard</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">Booking Records</div>
+            <div class="card-body p-0">
+                <table class="table table-striped table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Trek Name</th>
+                            <th>Location</th>
+                            <th>Dates</th>
+                            <th>Booking Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in bookings %}
+                        <tr>
+                            <td>#{{ booking.id }}</td>
+                            <td><strong>{{ booking.trek.name }}</strong></td>
+                            <td>{{ booking.trek.location }}</td>
+                            <td>{{ booking.trek.start_date }} to {{ booking.trek.end_date }}</td>
+                            <td>{{ booking.booking_date }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if booking.status == 'Completed' else 'primary' if booking.status == 'Booked' else 'danger' }}">
+                                    {{ booking.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">You have not booked any treks yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
