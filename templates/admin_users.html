@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <h2>Manage Staff & Users</h2>
+        <a href="/admin/dashboard" class="btn btn-outline-secondary btn-sm">← Back to Dashboard</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white">Trek Staff</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in staff %}
+                        <tr>
+                            <td>{{ s.username }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if s.status == 'approved' else 'warning text-dark' if s.status == 'pending' else 'danger' }}">
+                                    {{ s.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <form method="POST" action="/admin/users" class="d-inline">
+                                    <input type="hidden" name="user_id" value="{{ s.id }}">
+                                    {% if s.status == 'pending' %}
+                                        <button type="submit" name="action" value="approve" class="btn btn-success btn-sm">Approve</button>
+                                    {% endif %}
+                                    {% if s.status != 'blacklisted' %}
+                                        <button type="submit" name="action" value="blacklist" class="btn btn-danger btn-sm">Blacklist</button>
+                                    {% endif %}
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="3" class="text-center">No staff registered yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">Trekkers (Users)</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in users %}
+                        <tr>
+                            <td>{{ u.username }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if u.status == 'active' else 'danger' }}">
+                                    {{ u.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <form method="POST" action="/admin/users" class="d-inline">
+                                    <input type="hidden" name="user_id" value="{{ u.id }}">
+                                    {% if u.status == 'active' %}
+                                        <button type="submit" name="action" value="blacklist" class="btn btn-danger btn-sm">Blacklist</button>
+                                    {% else %}
+                                        <button type="submit" name="action" value="activate" class="btn btn-success btn-sm">Reactivate</button>
+                                    {% endif %}
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="3" class="text-center">No users registered yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

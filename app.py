@@ -82,7 +82,6 @@ def register():
             return redirect(url_for('register'))
 
         hashed_password = generate_password_hash(password)
-        
         account_status = 'pending' if role == 'staff' else 'active'
 
         new_user = User(username=username, email=email, password=hashed_password, role=role, status=account_status)
@@ -108,7 +107,96 @@ def logout():
 
 @app.route('/admin/dashboard')
 @login_required
-def admin_dashboard(): return "<h1>Admin Dashboard (Coming in Milestone 3)</h1><a href='/logout'>Logout</a>"
+def admin_dashboard():
+    if current_user.role != 'admin':
+        flash('Unauthorized access!', 'danger')
+        return redirect(url_for('login'))
+    
+    total_treks = Trek.query.count()
+    total_users = User.query.filter_by(role='user').count()
+    total_staff = User.query.filter_by(role='staff').count()
+    total_bookings = Booking.query.count()
+    
+    return render_template('admin_dashboard.html', 
+                           total_treks=total_treks, 
+                           total_users=total_users, 
+                           total_staff=total_staff, 
+                           total_bookings=total_bookings)
+
+@app.route('/admin/treks', methods=['GET', 'POST'])
+@login_required
+def admin_treks():
+    if current_user.role != 'admin':
+        flash('Unauthorized access!', 'danger')
+        return redirect(url_for('login'))
+        
+    if request.method == 'POST':
+        name = request.form.get('name')
+        location = request.form.get('location')
+        difficulty = request.form.get('difficulty')
+        duration = request.form.get('duration')
+        slots = request.form.get('available_slots')
+        start_date = request.form.get('start_date')
+        end_date = request.form.get('end_date')
+        
+        new_trek = Trek(name=name, location=location, difficulty=difficulty, 
+                        duration=duration, available_slots=slots, 
+                        start_date=start_date, end_date=end_date)
+        db.session.add(new_trek)
+        db.session.commit()
+        flash('New trek successfully created!', 'success')
+        return redirect(url_for('admin_treks'))
+        
+    all_treks = Trek.query.all()
+    approved_staff = User.query.filter_by(role='staff', status='approved').all()
+    return render_template('admin_treks.html', treks=all_treks, staff_list=approved_staff)
+
+@app.route('/admin/users', methods=['GET', 'POST'])
+@login_required
+def admin_users():
+    if current_user.role != 'admin':
+        flash('Unauthorized access!', 'danger')
+        return redirect(url_for('login'))
+        
+    if request.method == 'POST':
+        target_user_id = request.form.get('user_id')
+        action = request.form.get('action')
+        user_to_modify = User.query.get(target_user_id)
+        
+        if user_to_modify:
+            if action == 'approve':
+                user_to_modify.status = 'approved'
+                flash(f'Staff {user_to_modify.username} approved!', 'success')
+            elif action == 'blacklist':
+                user_to_modify.status = 'blacklisted'
+                flash(f'User {user_to_modify.username} blacklisted!', 'danger')
+            elif action == 'activate':
+                user_to_modify.status = 'active'
+                flash(f'User {user_to_modify.username} reactivated!', 'success')
+            db.session.commit()
+            
+        return redirect(url_for('admin_users'))
+
+    staff_members = User.query.filter_by(role='staff').all()
+    regular_users = User.query.filter_by(role='user').all()
+    return render_template('admin_users.html', staff=staff_members, users=regular_users)
+
+@app.route('/admin/assign_staff', methods=['POST'])
+@login_required
+def assign_staff():
+    if current_user.role != 'admin':
+        return redirect(url_for('login'))
+        
+    trek_id = request.form.get('trek_id')
+    staff_id = request.form.get('staff_id')
+    
+    trek = Trek.query.get(trek_id)
+    if trek:
+        trek.assigned_staff_id = staff_id
+        db.session.commit()
+        flash('Staff assigned to trek successfully!', 'success')
+        
+    return redirect(url_for('admin_treks'))
 
 @app.route('/staff/dashboard')
 @login_required

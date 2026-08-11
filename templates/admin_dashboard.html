@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Admin Dashboard</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="/admin/treks" class="btn btn-primary">Manage Treks</a>
+        <a href="/admin/users" class="btn btn-secondary">Manage Staff/Users</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary mb-3 text-center">
+            <div class="card-body">
+                <h5 class="card-title">Total Treks</h5>
+                <h2 class="display-6">{{ total_treks }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success mb-3 text-center">
+            <div class="card-body">
+                <h5 class="card-title">Total Users</h5>
+                <h2 class="display-6">{{ total_users }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info mb-3 text-center">
+            <div class="card-body">
+                <h5 class="card-title">Total Staff</h5>
+                <h2 class="display-6">{{ total_staff }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning mb-3 text-center">
+            <div class="card-body">
+                <h5 class="card-title">Total Bookings</h5>
+                <h2 class="display-6">{{ total_bookings }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
