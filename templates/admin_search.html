@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <h2>Admin Search</h2>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" action="/admin/search" class="row gx-2 align-items-center">
+            <div class="col-md-5">
+                <input type="text" name="q" class="form-control" placeholder="Enter search text..." value="{{ query }}">
+            </div>
+            <div class="col-md-4">
+                <select name="type" class="form-select">
+                    <option value="trek" {% if search_type == 'trek' %}selected{% endif %}>Search Treks (by Name)</option>
+                    <option value="staff" {% if search_type == 'staff' %}selected{% endif %}>Search Staff (by Username)</option>
+                    <option value="user" {% if search_type == 'user' %}selected{% endif %}>Search Users (by Username)</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">Search</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if query %}
+<div class="card shadow-sm">
+    <div class="card-header bg-secondary text-white">Search Results</div>
+    <div class="card-body p-0">
+        <table class="table table-striped mb-0">
+            <thead class="table-light">
+                {% if search_type == 'trek' %}
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Difficulty</th>
+                        <th>Slots</th>
+                        <th>Status</th>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                    </tr>
+                {% endif %}
+            </thead>
+            <tbody>
+                {% for r in results %}
+                    {% if search_type == 'trek' %}
+                        <tr>
+                            <td>{{ r.id }}</td>
+                            <td><strong>{{ r.name }}</strong></td>
+                            <td>{{ r.location }}</td>
+                            <td>{{ r.difficulty }}</td>
+                            <td>{{ r.available_slots }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if r.status == 'Open' else 'danger' }}">{{ r.status }}</span>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td>{{ r.id }}</td>
+                            <td><strong>{{ r.username }}</strong></td>
+                            <td>{{ r.email }}</td>
+                            <td>{{ r.role }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if r.status in ['active', 'approved'] else 'danger' if r.status == 'blacklisted' else 'warning' }}">{{ r.status }}</span>
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">No results found matching "{{ query }}".</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

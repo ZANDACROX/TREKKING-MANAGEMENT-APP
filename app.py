@@ -102,8 +102,6 @@ def logout():
 def profile():
     return render_template('profile.html')
 
-
-# --- ADMIN ROUTES ---
 @app.route('/admin/dashboard')
 @login_required
 def admin_dashboard():
@@ -133,6 +131,56 @@ def admin_treks():
     all_treks = Trek.query.all()
     approved_staff = User.query.filter_by(role='staff', status='approved').all()
     return render_template('admin_treks.html', treks=all_treks, staff_list=approved_staff)
+
+@app.route('/admin/edit_trek/<int:trek_id>', methods=['GET', 'POST'])
+@login_required
+def admin_edit_trek(trek_id):
+    if current_user.role != 'admin': return redirect(url_for('login'))
+    trek = Trek.query.get(trek_id)
+    if not trek: return redirect(url_for('admin_treks'))
+    
+    if request.method == 'POST':
+        trek.name = request.form.get('name')
+        trek.location = request.form.get('location')
+        trek.difficulty = request.form.get('difficulty')
+        trek.duration = request.form.get('duration')
+        trek.available_slots = request.form.get('available_slots')
+        trek.start_date = request.form.get('start_date')
+        trek.end_date = request.form.get('end_date')
+        db.session.commit()
+        flash('Trek updated successfully!', 'success')
+        return redirect(url_for('admin_treks'))
+        
+    return render_template('admin_edit_trek.html', trek=trek)
+
+@app.route('/admin/delete_trek/<int:trek_id>', methods=['POST'])
+@login_required
+def admin_delete_trek(trek_id):
+    if current_user.role != 'admin': return redirect(url_for('login'))
+    trek = Trek.query.get(trek_id)
+    if trek:
+        db.session.delete(trek)
+        db.session.commit()
+        flash('Trek deleted successfully!', 'success')
+    return redirect(url_for('admin_treks'))
+
+@app.route('/admin/search', methods=['GET'])
+@login_required
+def admin_search():
+    if current_user.role != 'admin': return redirect(url_for('login'))
+    query = request.args.get('q', '')
+    search_type = request.args.get('type', 'trek')
+    results = []
+    
+    if query:
+        if search_type == 'trek':
+            results = Trek.query.filter(Trek.name.ilike(f'%{query}%')).all()
+        elif search_type == 'staff':
+            results = User.query.filter(User.role == 'staff', User.username.ilike(f'%{query}%')).all()
+        elif search_type == 'user':
+            results = User.query.filter(User.role == 'user', User.username.ilike(f'%{query}%')).all()
+            
+    return render_template('admin_search.html', results=results, query=query, search_type=search_type)
 
 @app.route('/admin/staff', methods=['GET', 'POST'])
 @login_required
@@ -183,8 +231,6 @@ def admin_bookings():
     all_bookings = Booking.query.all()
     return render_template('admin_bookings.html', bookings=all_bookings)
 
-
-# --- STAFF ROUTES ---
 @app.route('/staff/dashboard')
 @login_required
 def staff_dashboard():
@@ -222,8 +268,6 @@ def staff_participants():
     bookings = Booking.query.filter(Booking.trek_id.in_(trek_ids)).all() if trek_ids else []
     return render_template('staff_participants.html', bookings=bookings)
 
-
-# --- USER ROUTES ---
 @app.route('/user/dashboard', methods=['GET'])
 @login_required
 def user_dashboard():
@@ -286,7 +330,6 @@ def user_history():
     if current_user.role != 'user': return redirect(url_for('login'))
     all_bookings = Booking.query.filter_by(user_id=current_user.id).all()
     return render_template('user_history.html', bookings=all_bookings)
-
 
 if __name__ == '__main__':
     init_db()

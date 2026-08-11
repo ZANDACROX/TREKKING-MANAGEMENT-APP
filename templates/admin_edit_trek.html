@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <h2>Edit Trek: {{ trek.name }}</h2>
+        <a href="/admin/treks" class="btn btn-outline-secondary btn-sm">← Back to Manage Treks</a>
+    </div>
+</div>
+
+<div class="card shadow-sm" style="max-width: 600px;">
+    <div class="card-body">
+        <form method="POST" action="/admin/edit_trek/{{ trek.id }}">
+            <div class="mb-2">
+                <label>Trek Name</label>
+                <input type="text" name="name" class="form-control" value="{{ trek.name }}" required>
+            </div>
+            <div class="mb-2">
+                <label>Location</label>
+                <input type="text" name="location" class="form-control" value="{{ trek.location }}" required>
+            </div>
+            <div class="mb-2">
+                <label>Difficulty</label>
+                <select name="difficulty" class="form-select">
+                    <option value="Easy" {% if trek.difficulty == 'Easy' %}selected{% endif %}>Easy</option>
+                    <option value="Moderate" {% if trek.difficulty == 'Moderate' %}selected{% endif %}>Moderate</option>
+                    <option value="Hard" {% if trek.difficulty == 'Hard' %}selected{% endif %}>Hard</option>
+                </select>
+            </div>
+            <div class="mb-2">
+                <label>Duration (Days)</label>
+                <input type="number" name="duration" class="form-control" value="{{ trek.duration }}" required min="1">
+            </div>
+            <div class="mb-2">
+                <label>Available Slots</label>
+                <input type="number" name="available_slots" class="form-control" value="{{ trek.available_slots }}" required min="1">
+            </div>
+            <div class="mb-2">
+                <label>Start Date</label>
+                <input type="date" name="start_date" class="form-control" value="{{ trek.start_date }}" required>
+            </div>
+            <div class="mb-3">
+                <label>End Date</label>
+                <input type="date" name="end_date" class="form-control" value="{{ trek.end_date }}" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
