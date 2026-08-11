@@ -200,7 +200,44 @@ def assign_staff():
 
 @app.route('/staff/dashboard')
 @login_required
-def staff_dashboard(): return "<h1>Staff Dashboard (Coming in Milestone 4)</h1><a href='/logout'>Logout</a>"
+def staff_dashboard():
+    if current_user.role != 'staff':
+        flash('Unauthorized access!', 'danger')
+        return redirect(url_for('login'))
+    
+    assigned_treks = Trek.query.filter_by(assigned_staff_id=current_user.id).all()
+    
+    return render_template('staff_dashboard.html', treks=assigned_treks)
+
+@app.route('/staff/manage_trek/<int:trek_id>', methods=['GET', 'POST'])
+@login_required
+def staff_manage_trek(trek_id):
+    if current_user.role != 'staff':
+        flash('Unauthorized access!', 'danger')
+        return redirect(url_for('login'))
+        
+    trek = Trek.query.get(trek_id)
+    
+    if not trek or trek.assigned_staff_id != current_user.id:
+        flash('You are not authorized to manage this trek.', 'danger')
+        return redirect(url_for('staff_dashboard'))
+        
+    if request.method == 'POST':
+        new_slots = request.form.get('available_slots')
+        new_status = request.form.get('status')
+        
+        if new_slots:
+            trek.available_slots = int(new_slots)
+        if new_status:
+            trek.status = new_status
+            
+        db.session.commit()
+        flash('Trek details updated successfully!', 'success')
+        return redirect(url_for('staff_manage_trek', trek_id=trek.id))
+        
+    trek_bookings = Booking.query.filter_by(trek_id=trek.id).all()
+    
+    return render_template('staff_manage_trek.html', trek=trek, bookings=trek_bookings)
 
 @app.route('/user/dashboard')
 @login_required

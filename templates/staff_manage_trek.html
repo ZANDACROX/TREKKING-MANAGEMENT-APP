@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <h2>Manage: {{ trek.name }}</h2>
+        <a href="/staff/dashboard" class="btn btn-outline-secondary btn-sm">← Back to Assigned Treks</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-warning text-dark">Update Trek Details</div>
+            <div class="card-body">
+                <form method="POST" action="/staff/manage_trek/{{ trek.id }}">
+                    <div class="mb-3">
+                        <label>Update Available Slots</label>
+                        <input type="number" name="available_slots" class="form-control" value="{{ trek.available_slots }}" min="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Update Status</label>
+                        <select name="status" class="form-select">
+                            <option value="Open" {% if trek.status == 'Open' %}selected{% endif %}>Open</option>
+                            <option value="Closed" {% if trek.status == 'Closed' %}selected{% endif %}>Closed</option>
+                            <option value="Completed" {% if trek.status == 'Completed' %}selected{% endif %}>Completed</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">Registered Participants ({{ bookings|length }})</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Trekker Name</th>
+                            <th>Email</th>
+                            <th>Booking Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in bookings %}
+                        <tr>
+                            <td>#{{ booking.id }}</td>
+                            <td>{{ booking.user.username }}</td>
+                            <td>{{ booking.user.email }}</td>
+                            <td>{{ booking.booking_date }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if booking.status == 'Completed' else 'primary' if booking.status == 'Booked' else 'danger' }}">
+                                    {{ booking.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4">No users have booked this trek yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
